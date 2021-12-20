@@ -29,7 +29,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 
-mongoose.connect("mongodb://localhost:27017/userDB",
+mongoose.connect("mongodb+srv://abhijeet45:Abhijeet%40123@cluster0.pgyop.mongodb.net/userDB",
 {useNewUrlParser: true});
 
 
@@ -208,9 +208,12 @@ app.post("/login",function(req,res){
 
 
 
+let port = process.env.PORT;
+if (port == null || port == "") {
+  port = 3000;
+}
 
 
-
-app.listen(3000,function(){
-    console.log("Server is running at port 3000");
+app.listen(port,function(){
+    console.log("Server is running Successfully");
 })
