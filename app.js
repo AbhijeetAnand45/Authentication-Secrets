@@ -1,6 +1,7 @@
 //jshint esversion:6
 
 require('dotenv-extended').load();
+require('dotenv').config()
 const express = require("express");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
@@ -28,13 +29,13 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-
+// mongodb+srv://abhijeet45:<password>@cluster0.pgyop.mongodb.net/userDB
 mongoose.connect("mongodb+srv://abhijeet45:Abhijeet%40123@cluster0.pgyop.mongodb.net/userDB",
 {useNewUrlParser: true});
 
 
 const userSchema = new mongoose.Schema({
-    email: String,
+  username: { type: String, index: false },
     password: String,
     googleId: String,
     facebookId: String,
@@ -66,7 +67,7 @@ passport.use(new GoogleStrategy({
     userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
   },
   function(accessToken, refreshToken, profile, cb) {
-      console.log(profile);
+      // console.log(profile);
     User.findOrCreate({ googleId: profile.id }, function (err, user) {
       return cb(err, user);
     });
@@ -74,8 +75,8 @@ passport.use(new GoogleStrategy({
 ));
 
 passport.use(new FacebookStrategy({
-    clientID: process.env.CLIENT_ID_FB,
-    clientSecret: process.env.CLIENT_SECRET_FB,
+    clientID: process.env.CLIENT_IDFB,
+    clientSecret: process.env.CLIENT_SECRETFB,
     callbackURL: "http://localhost:3000/auth/facebook/secrets"
   },
   function(accessToken, refreshToken, profile, done) {
@@ -122,14 +123,6 @@ app.get("/register",function(req,res){
     res.render("register");
 })
 
-app.get("/submit",function(req,res){
-    if(req.isAuthenticated()){
-        res.render("secrets");
-    }else{
-        res.redirect("/login");
-    }
-});
-
 
 app.get("/secrets",function(req,res){
  User.find({"secret": {$ne : null}}, function(err,foundUser){
@@ -138,11 +131,20 @@ app.get("/secrets",function(req,res){
 
    }else{
      if(foundUser){
+      //  console.log(foundUser);
        res.render("secrets",{userWithSecrets: foundUser});
      }
    }
  })
 })
+
+app.get("/submit",function(req,res){
+  if(req.isAuthenticated()){
+      res.render("submit");
+  }else{
+      res.redirect("/login");
+  }
+});
 
 app.post("/submit",function(req,res){
   const submittedSecret = req.body.secret;
@@ -155,7 +157,7 @@ app.post("/submit",function(req,res){
       if(foundUser){
         foundUser.secret = submittedSecret;
         foundUser.save(function(){
-          res.redirect("/submit");
+          res.redirect("/secrets");
         });
       }
     }
